@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto Casa Karü</title>
+    
+    <!-- Carga de Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fuente Inter --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Carga de html2canvas para la captura de imagen --><script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Colores personalizados de Casa Karü */
+        :root {
+            --color-primary: #4A6B5C; /* Verde oscuro del logo */
+            --color-secondary: #8ABF93; /* Verde claro de las hojas */
+            --color-text-dark: #333333; /* Texto oscuro */
+            --color-text-light: #666666; /* Texto gris */
+        }
+
+        .bg-primary { background-color: var(--color-primary); }
+        .text-primary { color: var(--color-primary); }
+        .border-primary { border-color: var(--color-primary); }
+        .ring-primary { --tw-ring-color: var(--color-primary); }
+
+        .bg-secondary { background-color: var(--color-secondary); }
+        .text-secondary { color: var(--color-secondary); }
+
+        .text-text-dark { color: var(--color-text-dark); }
+        .text-text-light { color: var(--color-text-light); }
+
+        /* Estilos para el contenedor de descarga, que solo será visible durante la captura */
+        /* SECCIÓN ELIMINADA - Ya no es necesaria */
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-12 text-text-dark">
+
+    <!-- Contenedor principal del presupuesto (para la interfaz interactiva) --><div id="presupuestoContent" class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-xl">
+        
+        <!-- Encabezado --><div class="mb-8 text-center">
+            <!-- Logo eliminado -->
+            <h1 class="text-3xl font-extrabold text-primary pt-12">Presupuesto Casa Karü</h1>
+            <p class="text-text-light mt-2">Detalle de servicios y productos con estimación de costos.</p>
+        </div>
+
+        <!-- Información del Cliente --><div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pb-8 border-b border-gray-200">
+            <div>
+                <label for="cliente" class="block text-sm font-medium text-text-light mb-1">Preparado para:</label>
+                <input type="text" id="cliente" placeholder="Nombre del Cliente o Empresa" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 ring-primary focus:border-primary transition">
+            </div>
+            <div>
+                <label for="proyecto" class="block text-sm font-medium text-text-light mb-1">Proyecto:</label>
+                <input type="text" id="proyecto" placeholder="Descripción del Proyecto" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 ring-primary focus:border-primary transition">
+            </div>
+        </div>
+
+        <!-- Sección de Ítems --><div class="mb-6">
+            <h2 class="text-xl font-bold text-primary mb-4">Detalle del Presupuesto</h2>
+            
+            <!-- Encabezados de la tabla (Desktop) --><div class="hidden md:grid md:grid-cols-12 gap-4 mb-2 text-sm font-medium text-text-light uppercase">
+                <div class="md:col-span-5">Descripción</div>
+                <div class="md:col-span-2">Cantidad</div>
+                <div class="md:col-span-2">Precio Unitario</div>
+                <div class="md:col-span-2">Total Parcial</div>
+                <div class="md:col-span-1"></div>
+            </div>
+
+            <!-- Contenedor de Ítems Dinámicos --><div id="itemsContainer" class="space-y-4">
+                <!-- Los ítems se agregarán aquí --></div>
+
+            <!-- Botón para Agregar Ítem --><button id="addItemBtn" class="mt-6 bg-primary text-white py-2 px-5 rounded-lg font-semibold hover:bg-opacity-90 transition shadow-md flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Agregar Ítem
+            </button>
+        </div>
+
+        <hr class="my-8 border-gray-200">
+
+        <!-- Sección de Ajustes de Descuento y Envío --><div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 mb-8">
+            <div class="space-y-4">
+                <div>
+                    <label for="discountPercent" class="block text-sm font-medium text-text-light mb-1">Descuento Aplicado (%)</label>
+                    <input type="number" id="discountPercent" value="0" min="0" max="100" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 ring-primary focus:border-primary transition">
+                </div>
+                <div>
+                    <label for="shippingCost" class="block text-sm font-medium text-text-light mb-1">Costo de Envío ($)</label>
+                    <input type="number" id="shippingCost" value="6000" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 ring-primary focus:border-primary transition">
+                </div>
+            </div>
+            <!-- Esta columna derecha se deja vacía o se puede usar para otra cosa en la UI principal si se desea --><div></div> 
+        </div>
+
+        <!-- Contenedor del Resumen de Totales (El que se mostrará en pantalla y se capturará) --><div id="summaryDisplay" class="max-w-md ml-auto space-y-4 bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+            <h2 class="text-xl font-bold text-primary mb-4">Resumen de Costos</h2>
+            
+            <!-- Subtotal --><div class="flex justify-between items-center text-md">
+                <span class="text-text-light">Subtotal:</span>
+                <span id="subtotal" class="font-semibold text-text-dark">$0</span>
+            </div>
+            <!-- Monto Descuento --><div class="flex justify-between items-center text-md text-red-600">
+                <span class="">Descuento:</span>
+                <span id="discountAmount" class="font-semibold">-$0</span>
+            </div>
+            <!-- Envío --><div class="flex justify-between items-center text-md">
+                <span class="text-text-light">Envío:</span>
+                <span id="shippingAmount" class="font-semibold text-text-dark">$6.000</span>
+            </div>
+
+            <!-- Total General --><div class="flex justify-between items-center text-2xl font-extrabold text-primary border-t-2 border-b-2 border-gray-200 py-4 my-2">
+                <span class="">Total General:</span>
+                <span id="totalGeneral">$6.000</span>
+            </div>
+
+            <!-- Plan de Pago (60% anticipo, 40% saldo) --><div class="space-y-2 pt-2">
+                <div class="flex justify-between items-center text-lg">
+                    <span class="text-text-dark font-medium">Anticipo (60%):</span>
+                    <span id="anticipo" class="font-bold text-primary">$3.600</span>
+                </div>
+                <div class="flex justify-between items-center text-lg">
+                    <span class="text-text-dark font-medium">Saldo (40%):</span>
+                    <span id="saldo" class="font-bold text-text-dark">$2.400</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-8 border-gray-200">
+
+        <!-- Notas --><div class="space-y-4 text-sm text-text-light">
+            <h3 class="font-semibold text-primary text-lg">Notas y Términos:</h3>
+            <p>• Los precios pueden variar según las especificaciones finales del proyecto.</p>
+            <p>• Los plazos de entrega se especificarán una vez confirmado el anticipo.</p>
+            <p>• Este presupuesto tiene una validez de 30 días desde la fecha de emisión.</p>
+        </div>
+
+        <!-- Pie de página --><div class="mt-8 text-center text-text-light text-sm border-t pt-6 border-gray-200">
+            <p>Casa Karü | contacto@casakaru.cl | +56 9 1234 5678</p>
+        </div>
+
+    </div>
+
+    <!-- Botón de Descarga (fuera del contenido principal para que no aparezca en la imagen de la captura) --><div class="max-w-4xl mx-auto mt-8 text-center">
+        <button id="downloadImageBtn" class="bg-secondary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition shadow-lg flex items-center justify-center gap-2 mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Descargar Resumen (PNG)
+        </button>
+    </div>
+
+    <!-- Contenedor oculto para generar la imagen de descarga -->
+    <!-- ESTE DIV COMPLETO HA SIDO ELIMINADO -->
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const itemsContainer = document.getElementById('itemsContainer');
+            const addItemBtn = document.getElementById('addItemBtn');
+            const downloadImageBtn = document.getElementById('downloadImageBtn');
+            
+            // Campos de cálculo de la interfaz principal
+            const discountPercentInput = document.getElementById('discountPercent');
+            const shippingCostInput = document.getElementById('shippingCost');
+
+            // Campos de visualización de la interfaz principal
+            const subtotalEl = document.getElementById('subtotal');
+            const discountAmountEl = document.getElementById('discountAmount');
+            const shippingAmountEl = document.getElementById('shippingAmount');
+            const totalGeneralEl = document.getElementById('totalGeneral');
+            const anticipoEl = document.getElementById('anticipo');
+            const saldoEl = document.getElementById('saldo');
+
+            // Campos de visualización para el contenido de DESCARGA
+            // ESTAS LÍNEAS HAN SIDO ELIMINADAS
+            /*
+            const subtotalDownloadEl = document.getElementById('subtotalDownload');
+            const discountAmountDownloadEl = document.getElementById('discountAmountDownload');
+            const shippingAmountDownloadEl = document.getElementById('shippingAmountDownload');
+            const totalGeneralDownloadEl = document.getElementById('totalGeneralDownload');
+            const anticipoDownloadEl = document.getElementById('anticipoDownload');
+            const saldoDownloadEl = document.getElementById('saldoDownload');
+            const downloadContentWrapper = document.getElementById('downloadContentWrapper');
+            */
+
+            let itemIdCounter = 0;
+
+            /**
+             * Formatea un número como moneda chilena (CLP).
+             * @param {number} number - El número a formatear.
+             * @returns {string} - El número formateado (ej: $1.234).
+             */
+            const formatCurrencyCLP = (number) => {
+                if (isNaN(number)) number = 0;
+                return new Intl.NumberFormat('es-CL', {
+                    style: 'currency',
+                    currency: 'CLP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(Math.round(number));
+            };
+
+            /**
+             * Crea una nueva fila de ítem.
+             */
+            const createItemRow = () => {
+                itemIdCounter++;
+                const rowId = `item-row-${itemIdCounter}`;
+                const div = document.createElement('div');
+                div.className = 'flex flex-col md:grid md:grid-cols-12 gap-2 md:gap-4 items-center p-4 border border-gray-200 rounded-lg bg-white shadow-sm';
+                div.id = rowId;
+
+                div.innerHTML = `
+                    <!-- Descripción --><div class="w-full md:col-span-5">
+                        <label for="desc-${itemIdCounter}" class="md:hidden block text-sm font-medium text-text-light mb-1">Descripción</label>
+                        <input type="text" id="desc-${itemIdCounter}" class="item-input w-full p-2 border border-gray-300 rounded-lg focus:ring-1 ring-primary focus:border-primary" placeholder="Servicio o Producto">
+                    </div>
+                    
+                    <!-- Cantidad --><div class="w-full md:col-span-2">
+                        <label for="qty-${itemIdCounter}" class="md:hidden block text-sm font-medium text-text-light mb-1">Cantidad</label>
+                        <input type="number" id="qty-${itemIdCounter}" class="item-input w-full p-2 border border-gray-300 rounded-lg focus:ring-1 ring-primary focus:border-primary" value="1" min="0">
+                    </div>
+
+                    <!-- Precio Unitario --><div class="w-full md:col-span-2">
+                        <label for="price-${itemIdCounter}" class="md:hidden block text-sm font-medium text-text-light mb-1">Precio Unitario</label>
+                        <input type="number" id="price-${itemIdCounter}" class="item-input w-full p-2 border border-gray-300 rounded-lg focus:ring-1 ring-primary focus:border-primary" value="0" min="0" placeholder="$">
+                    </div>
+
+                    <!-- Total Parcial --><div class="w-full md:col-span-2 flex justify-between items-center">
+                        <label class="md:hidden text-sm font-medium text-text-light">Total Parcial:</label>
+                        <span class="item-total-partial font-semibold text-text-dark text-lg p-2 block">${formatCurrencyCLP(0)}</span>
+                    </div>
+
+                    <!-- Botón Eliminar --><div class="w-full md:col-span-1 flex justify-end md:justify-center">
+                        <button class="delete-item-btn text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition" title="Eliminar ítem">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+
+                itemsContainer.appendChild(div);
+
+                // Agregar listeners a los nuevos inputs de esta fila
+                div.querySelectorAll('.item-input').forEach(input => {
+                    input.addEventListener('input', calculateTotal);
+                });
+
+                // Agregar listener al botón de eliminar
+                div.querySelector('.delete-item-btn').addEventListener('click', (e) => {
+                    e.preventDefault(); // Evita cualquier comportamiento por defecto
+                    div.remove();
+                    calculateTotal();
+                });
+            };
+
+            /**
+             * Calcula todos los totales del presupuesto y actualiza tanto la UI como el contenedor de descarga.
+             */
+            const calculateTotal = () => {
+                let subtotal = 0;
+                
+                // 1. Calcular Subtotal de ítems
+                document.querySelectorAll('#itemsContainer > div').forEach(row => {
+                    const quantity = parseFloat(row.querySelector('input[type="number"][id^="qty-"]').value) || 0;
+                    const price = parseFloat(row.querySelector('input[type="number"][id^="price-"]').value) || 0;
+                    const totalParcial = quantity * price;
+
+                    // Actualiza el total parcial de la fila
+                    row.querySelector('.item-total-partial').textContent = formatCurrencyCLP(totalParcial);
+                    
+                    subtotal += totalParcial;
+                });
+
+                // 2. Obtener valores de descuento y envío
+                const discountPercent = parseFloat(discountPercentInput.value) || 0;
+                const shippingCost = parseFloat(shippingCostInput.value) || 0;
+
+                // 3. Calcular montos
+                const discountAmount = subtotal * (discountPercent / 100);
+                const totalGeneral = (subtotal - discountAmount) + shippingCost;
+
+                // 4. Calcular plan de pagos (60% anticipo, 40% saldo)
+                const anticipo = Math.round(totalGeneral * 0.60);
+                const saldo = totalGeneral - anticipo;
+
+                // 5. Actualizar la UI principal
+                subtotalEl.textContent = formatCurrencyCLP(subtotal);
+                discountAmountEl.textContent = `-${formatCurrencyCLP(discountAmount)}`;
+                shippingAmountEl.textContent = formatCurrencyCLP(shippingCost);
+                totalGeneralEl.textContent = formatCurrencyCLP(totalGeneral);
+                anticipoEl.textContent = formatCurrencyCLP(anticipo);
+                saldoEl.textContent = formatCurrencyCLP(saldo);
+
+                // 6. Actualizar el contenido del div oculto para la descarga
+                // ESTA SECCIÓN HA SIDO ELIMINADA
+            };
+
+            /**
+             * Descarga el contenido del presupuesto como una imagen PNG.
+             */
+            const downloadPresupuestoAsImage = () => {
+                // Modificado para capturar el contenedor principal completo
+                const presupuestoElement = document.getElementById('presupuestoContent');
+
+                // Lógica para mostrar/ocultar el wrapper eliminada
+
+                html2canvas(presupuestoElement, { 
+                    scale: 2, // Aumentar la escala para mayor resolución
+                    useCORS: true, // Importante si el logo viene de una URL externa
+                    backgroundColor: '#ffffff' // Fondo blanco explícito para la imagen
+                }).then(canvas => {
+                    // Lógica para ocultar el wrapper eliminada
+
+                    const link = document.createElement('a');
+                    link.download = 'presupuesto_casakaru.png'; // Nombre de archivo actualizado
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            };
+
+            // --- Inicialización ---
+
+            // Listeners para los campos de descuento y envío
+            discountPercentInput.addEventListener('input', calculateTotal);
+            shippingCostInput.addEventListener('input', calculateTotal);
+
+            // Listener para el botón de "Agregar Ítem"
+            addItemBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                createItemRow();
+            });
+
+            // Listener para el botón de "Descargar Imagen"
+            downloadImageBtn.addEventListener('click', downloadPresupuestoAsImage);
+
+            // Crear la primera fila al cargar la página
+            createItemRow();
+            // Calcular totales iniciales
+            calculateTotal();
+        });
+    </script>
+</body>
+</html>
